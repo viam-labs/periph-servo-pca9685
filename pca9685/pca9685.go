@@ -142,13 +142,17 @@ func (servo *pca9685Servo) Reconfigure(
 		return err
 	}
 
+	// PWM cycle has 4096 time slots. Frequency hz * 4096 is time slots per second.
+	// Divide that into 1 million to get microseconds per time slot
+	usPerSlot := 1000000 / float64(pwmFreq*4096)
+
 	minPwm := 50
 	if newConf.MinWidth != 0 {
-		minPwm = int(float64(newConf.MinWidth) / 4.8828125)
+		minPwm = int(float64(newConf.MinWidth) / usPerSlot)
 	}
 	maxPwm := 650
 	if newConf.MinWidth != 0 {
-		maxPwm = int(float64(newConf.MaxWidth) / 4.8828125)
+		maxPwm = int(float64(newConf.MaxWidth) / usPerSlot)
 	}
 	minAngle := 0
 	if newConf.MinAngle != 0 {
