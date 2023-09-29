@@ -1,7 +1,7 @@
 //go:build linux
 
 // Package pca9685servo implements a servo model supported by a PCA9685 and periph.io
-package periph_pca9685
+package pca9685
 
 import (
 	"context"
