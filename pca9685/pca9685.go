@@ -23,7 +23,7 @@ import (
 // Model represents a linux wifi strength sensor model.
 var Model = resource.NewModel("viam-labs", "servo", "pca9685")
 
-const defaultPwmFreq float32 = 50
+const defaultPwmFreq int = 50
 
 type pca9685Servo struct {
 	resource.Named
@@ -59,7 +59,16 @@ func init() {
 	resource.RegisterComponent(
 		servo.API,
 		Model,
-		resource.Registration[servo.Servo, *Config]{Constructor: newServo})
+		resource.Registration[servo.Servo, *Config]{
+			Constructor: func(
+				ctx context.Context,
+				deps resource.Dependencies,
+				conf resource.Config,
+				logger golog.Logger,
+			) (servo.Servo, error) {
+				return newServo(ctx, deps, conf, logger)
+			},
+		})
 }
 
 func newServo(
@@ -101,6 +110,8 @@ func (servo *pca9685Servo) Reconfigure(
 		return err
 	}
 
+	servo.logger.Info(newConf)
+
 	_, err = host.Init()
 	if err != nil {
 		return err
@@ -109,7 +120,6 @@ func (servo *pca9685Servo) Reconfigure(
 	i2cBus := "0"
 	if newConf.I2cBus != "" {
 		i2cBus = newConf.I2cBus
-
 	}
 
 	bus, err := i2creg.Open(i2cBus)
@@ -122,7 +132,7 @@ func (servo *pca9685Servo) Reconfigure(
 		return err
 	}
 
-	pwmFreq := 50
+	pwmFreq := defaultPwmFreq
 	if newConf.Frequency != 0 {
 		pwmFreq = newConf.Frequency
 	}
@@ -151,6 +161,7 @@ func (servo *pca9685Servo) Reconfigure(
 		maxAngle = newConf.MaxAngle
 	}
 
+	servo.logger.Info("Initializing servo on channel ", newConf.Channel, ", minPwm ", newConf.MinWidth, ", maxPwm ", newConf.MaxWidth, ", minAngle ", newConf.MinAngle, ", maxAngle ", newConf.MaxAngle, ", startingPosition ", newConf.StartingPosition)
 	servos := pca9685.NewServoGroup(pca, gpio.Duty(minPwm), gpio.Duty(maxPwm), physic.Angle(minAngle), physic.Angle(maxAngle))
 
 	servo.servo = servos.GetServo(newConf.Channel)
