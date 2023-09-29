@@ -110,8 +110,6 @@ func (servo *pca9685Servo) Reconfigure(
 		return err
 	}
 
-	servo.logger.Info(newConf)
-
 	_, err = host.Init()
 	if err != nil {
 		return err
@@ -146,11 +144,11 @@ func (servo *pca9685Servo) Reconfigure(
 
 	minPwm := 50
 	if newConf.MinWidth != 0 {
-		minPwm = newConf.MinWidth
+		minPwm = int(float64(newConf.MinWidth) / 4.8828125)
 	}
 	maxPwm := 650
 	if newConf.MinWidth != 0 {
-		maxPwm = newConf.MaxWidth
+		maxPwm = int(float64(newConf.MaxWidth) / 4.8828125)
 	}
 	minAngle := 0
 	if newConf.MinAngle != 0 {
