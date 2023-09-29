@@ -9,7 +9,6 @@ import (
 
 	"github.com/edaniels/golog"
 	"github.com/pkg/errors"
-	"go.viam.com/rdk/operation"
 
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/i2c/i2creg"
@@ -31,7 +30,6 @@ type pca9685Servo struct {
 	resource.TriviallyCloseable
 	resource.TriviallyReconfigurable
 	logger golog.Logger
-	opMgr  operation.SingleOperationManager
 
 	servo                   *pca9685.Servo
 	position                uint32
@@ -39,15 +37,16 @@ type pca9685Servo struct {
 	cancelFunc              func()
 	activeBackgroundWorkers sync.WaitGroup
 	mu                      sync.RWMutex
+	moving                  bool
 }
 
 type Config struct {
 	I2cBus           string `json:"i2c_bus"`
-	Pin              int    `json:"pin"`
+	Channel          int    `json:"channel"`
 	Frequency        int    `json:"frequency_hz"`
 	MinAngle         int    `json:"min_angle_deg"`
 	MaxAngle         int    `json:"max_angle_deg"`
-	StartingPosition int    `json:"starting_position_deg"`
+	StartingPosition uint32 `json:"starting_position_deg"`
 	MinWidth         int    `json:"min_width_us"`
 	MaxWidth         int    `json:"max_width_us"`
 }
@@ -80,6 +79,7 @@ func newServo(
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
 		mu:         sync.RWMutex{},
+		moving:     false,
 	}
 
 	if err := s.Reconfigure(ctx, nil, conf); err != nil {
@@ -153,8 +153,9 @@ func (servo *pca9685Servo) Reconfigure(
 
 	servos := pca9685.NewServoGroup(pca, gpio.Duty(minPwm), gpio.Duty(maxPwm), physic.Angle(minAngle), physic.Angle(maxAngle))
 
-	// This is an example of using with an Me Arm robot arm
-	servo.servo = servos.GetServo(0)
+	servo.servo = servos.GetServo(newConf.Channel)
+
+	servo.Move(ctx, newConf.StartingPosition, nil)
 
 	return nil
 }
@@ -165,15 +166,15 @@ func (servo *pca9685Servo) DoCommand(ctx context.Context, cmd map[string]interfa
 }
 
 func (servo *pca9685Servo) IsMoving(ctx context.Context) (bool, error) {
-	return servo.opMgr.OpRunning(), nil
+	return servo.moving, nil
 }
 
 func (servo *pca9685Servo) Move(ctx context.Context, ang uint32, extra map[string]interface{}) error {
-	ctx, done := servo.opMgr.New(ctx)
-	defer done()
+	servo.moving = true
 	if err := servo.servo.SetAngle(physic.Angle(ang)); err != nil {
 		return errors.Wrap(err, "couldn't set angle")
 	}
+	servo.moving = false
 	servo.position = ang
 	return nil
 }
@@ -183,12 +184,9 @@ func (servo *pca9685Servo) Position(ctx context.Context, extra map[string]interf
 }
 
 func (servo *pca9685Servo) Stop(ctx context.Context, extra map[string]interface{}) error {
-	ctx, done := servo.opMgr.New(ctx)
-	defer done()
-	// Turning the pin all the way off (i.e., setting the duty cycle to 0%) will cut power to the
-	// motor. If you wanted to send it to position 0, you should set it to `minUs` instead.
 	if err := servo.servo.SetPwm(0); err != nil {
 		return errors.Wrap(err, "couldn't stop servo")
 	}
+	servo.moving = false
 	return nil
 }
