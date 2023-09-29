@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/edaniels/golog"
-	"github.com/viam-labs/periph_servo_pca9685/pca9685"
+	"github.com/viam-labs/periph-servo-pca9685/pca9685"
 	"go.viam.com/rdk/components/servo"
 	"go.viam.com/rdk/module"
 	"go.viam.com/utils"
