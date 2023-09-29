@@ -1,9 +1,5 @@
 # periph-servo-pca9685
 
-A Viam modular servo implementation for servos connected to a PCA9685 breakout board
-
-# periph-servo-pca9685
-
 *periph-servo-pca9685* is a Viam modular component that uses the [periph.io](https://periph.io/) library to control servos connected to pca9685 channels.
 
 ## API
@@ -18,19 +14,13 @@ The periph-servo-pca9685 resource provides the following methods from Viam's bui
 
 ## Viam Component Configuration
 
-The following attributes may be configured as facial-detector config attributes.
-For example: the following configuration would use the `ssd` framework:
+The following attributes may be configured as periph-servo-pca9685 config attributes.
+For example: the following configuration set up a servo on I2C bus 0, PCA9685 channel 15:
 
 ``` json
 {
-  	"i2c_bus" : "0",
-	"channel" : 15,
-	Frequency        int    `json:"frequency_hz"`
-	MinAngle         int    `json:"min_angle_deg"`
-	MaxAngle         int    `json:"max_angle_deg"`
-	StartingPosition uint32 `json:"starting_position_deg"`
-	MinWidth         int    `json:"min_width_us"`
-	MaxWidth         int    `json:"max_width_us"`
+  "i2c_bus" : "0",
+  "channel" : 15
 }
 ```
 

@@ -1,0 +1,13 @@
+{
+  "module_id": "viam-labs:periph-servo-pca9685",
+  "visibility": "public",
+  "url": "https://github.com/viam-labs/periph-servo-pca9685",
+  "description": "A Viam modular servo implementation for servos connected to a PCA9685 breakout board",
+  "models": [
+    {
+      "api": "rdk:component:servo",
+      "model": "viam-labs:servo:pca9685"
+    }
+  ],
+  "entrypoint": "exec"
+}
