@@ -146,14 +146,18 @@ func (servo *pca9685Servo) Reconfigure(
 	// Divide that into 1 million to get microseconds per time slot
 	usPerSlot := 1000000 / float64(pwmFreq*4096)
 
-	minPwm := 50
-	if newConf.MinWidth != 0 {
-		minPwm = int(float64(newConf.MinWidth) / usPerSlot)
+	minWidth := newConf.MinWidth
+	if minWidth == 0 {
+		minWidth = 500 // reasonable default based on common hobby servos
 	}
-	maxPwm := 650
-	if newConf.MinWidth != 0 {
-		maxPwm = int(float64(newConf.MaxWidth) / usPerSlot)
+	minPwm := int(float64(minWidth) / usPerSlot)
+
+	maxWidth := newConf.MaxWidth
+	if maxWidth == 0 {
+		maxWidth = 2500 // reasonable default based on common hobby servos
 	}
+	maxPwm := int(float64(maxWidth) / usPerSlot)
+
 	minAngle := 0
 	if newConf.MinAngle != 0 {
 		minAngle = newConf.MinAngle
@@ -163,7 +167,7 @@ func (servo *pca9685Servo) Reconfigure(
 		maxAngle = newConf.MaxAngle
 	}
 
-	servo.logger.Info("Initializing servo on channel ", newConf.Channel, ", minPwm ", newConf.MinWidth, ", maxPwm ", newConf.MaxWidth, ", minAngle ", newConf.MinAngle, ", maxAngle ", newConf.MaxAngle, ", startingPosition ", newConf.StartingPosition)
+	servo.logger.Info("Initializing servo on channel ", newConf.Channel, ", minPwm ", minPwm, ", maxPwm ", maxPwm, ", minAngle ", minAngle, ", maxAngle ", maxAngle, ", startingPosition ", newConf.StartingPosition)
 	servos := pca9685.NewServoGroup(pca, gpio.Duty(minPwm), gpio.Duty(maxPwm), physic.Angle(minAngle), physic.Angle(maxAngle))
 
 	servo.servo = servos.GetServo(newConf.Channel)
