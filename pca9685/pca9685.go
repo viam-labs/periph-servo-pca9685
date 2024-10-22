@@ -187,6 +187,8 @@ func (servo *pca9685Servo) IsMoving(ctx context.Context) (bool, error) {
 }
 
 func (servo *pca9685Servo) Move(ctx context.Context, ang uint32, extra map[string]interface{}) error {
+	servo.mu.Lock()
+	defer servo.mu.Unlock()
 	servo.moving = true
 	if err := servo.servo.SetAngle(physic.Angle(ang)); err != nil {
 		return errors.Wrap(err, "couldn't set angle")
@@ -201,6 +203,8 @@ func (servo *pca9685Servo) Position(ctx context.Context, extra map[string]interf
 }
 
 func (servo *pca9685Servo) Stop(ctx context.Context, extra map[string]interface{}) error {
+	servo.mu.Lock()
+	defer servo.mu.Unlock()
 	if err := servo.servo.SetPwm(0); err != nil {
 		return errors.Wrap(err, "couldn't stop servo")
 	}
