@@ -9,5 +9,12 @@
       "model": "viam-labs:servo:pca9685"
     }
   ],
+  "build": {
+    "build": "make module.tar.gz",
+    "path": "module.tar.gz",
+    "arch": [
+      "linux/arm64"
+    ]
+  },
   "entrypoint": "exec"
 }
