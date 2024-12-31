@@ -5,11 +5,9 @@ package pca9685
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"sync"
 
-	"github.com/edaniels/golog"
 	"github.com/pkg/errors"
 
 	"periph.io/x/conn/v3/gpio"
@@ -19,6 +17,7 @@ import (
 	"periph.io/x/host/v3"
 
 	"go.viam.com/rdk/components/servo"
+	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
 )
 
@@ -31,7 +30,7 @@ type pca9685Servo struct {
 	resource.Named
 	resource.TriviallyCloseable
 	resource.TriviallyReconfigurable
-	logger golog.Logger
+	logger logging.Logger
 
 	servo                   *pca9685.Servo
 	position                uint32
@@ -67,7 +66,7 @@ func init() {
 				ctx context.Context,
 				deps resource.Dependencies,
 				conf resource.Config,
-				logger golog.Logger,
+				logger logging.Logger,
 			) (servo.Servo, error) {
 				return newServo(ctx, deps, conf, logger)
 			},
@@ -78,7 +77,7 @@ func newServo(
 	ctx context.Context,
 	_ resource.Dependencies,
 	conf resource.Config,
-	logger golog.Logger,
+	logger logging.Logger,
 ) (servo.Servo, error) {
 	logger.Info("Starting viam-labs:servo:pca9865 instance")
 
