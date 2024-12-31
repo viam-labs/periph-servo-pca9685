@@ -30,6 +30,14 @@ For example: the following configuration set up a servo on I2C bus 0, PCA9685 ch
 
 The name or number of the I2C bus to which the PCA9685 is connected.
 
+### i2c_addr
+
+*string (default: "0x40")*
+
+The number of the I2C address to which the PCA9685 is connected. This can be formatted as hex (prefixed by "0x") or base 10 (unprefixed) values.
+
+If you're not sure which address to use, see [this guide] for how to detect i2c devices. `i2cdetect` displays the hex formatted value.
+
 ### channel
 
 *int (default: 0)*

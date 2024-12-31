@@ -5,6 +5,8 @@ package pca9685
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/edaniels/golog"
@@ -42,6 +44,7 @@ type pca9685Servo struct {
 
 type Config struct {
 	I2cBus           string `json:"i2c_bus"`
+	I2cAddr          string `json:"i2c_addr"`
 	Channel          int    `json:"channel"`
 	Frequency        int    `json:"frequency_hz"`
 	MinAngle         int    `json:"min_angle_deg"`
@@ -125,7 +128,16 @@ func (servo *pca9685Servo) Reconfigure(
 		return err
 	}
 
-	pca, err := pca9685.NewI2C(bus, pca9685.I2CAddr)
+	i2cAddr := pca9685.I2CAddr
+	if newConf.I2cAddr != "" {
+		parsedAddr, err := strconv.ParseUint(newConf.I2cAddr, 0, 16)
+		if err != nil {
+			return err
+		}
+		i2cAddr = uint16(parsedAddr)
+	}
+
+	pca, err := pca9685.NewI2C(bus, i2cAddr)
 	if err != nil {
 		return err
 	}
