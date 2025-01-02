@@ -81,3 +81,25 @@ See the datasheet for the servo to control.
 
 The maximum duty cycle width in microseconds.
 See the datasheet for the servo to control.
+
+## Development
+
+To release a new version of this module, this repo uses the [Viam build-action](https://github.com/viamrobotics/build-action) to build the module in Viam's cloud infrastructure and deploy the new version based on a [tagged release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
+
+To kick off a deployment:
+
+1. [Tag the release commit with the new module version](https://git-scm.com/book/en/v2/Git-Basics-Tagging) and push it to the repo
+1. [Create a release based on that tag](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release)
+
+Within a couple of minutes, the new module version should be published to the Viam registry.
+
+If there is an issue with the action and a manual release is required:
+
+1. Authenticate the Viam CLI:
+   ```console
+   viam auth login
+   ```
+1. Start a remote build for the new module version
+   ```console
+   viam module build start --version <version>
+   ```
