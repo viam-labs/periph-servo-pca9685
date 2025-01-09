@@ -18,6 +18,7 @@ import (
 
 	"go.viam.com/rdk/components/servo"
 	"go.viam.com/rdk/logging"
+	"go.viam.com/rdk/operation"
 	"go.viam.com/rdk/resource"
 )
 
@@ -38,7 +39,7 @@ type pca9685Servo struct {
 	cancelFunc              func()
 	activeBackgroundWorkers sync.WaitGroup
 	mu                      sync.RWMutex
-	moving                  bool
+	opMgr                   *operation.SingleOperationManager
 }
 
 type Config struct {
@@ -90,7 +91,7 @@ func newServo(
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
 		mu:         sync.RWMutex{},
-		moving:     false,
+		opMgr:      operation.NewSingleOperationManager(),
 	}
 
 	if err := s.Reconfigure(ctx, nil, conf); err != nil {
@@ -178,12 +179,14 @@ func (servo *pca9685Servo) Reconfigure(
 		maxAngle = newConf.MaxAngle
 	}
 
-	servo.logger.Info("Initializing servo on channel ", newConf.Channel, ", minPwm ", minPwm, ", maxPwm ", maxPwm, ", minAngle ", minAngle, ", maxAngle ", maxAngle, ", startingPosition ", newConf.StartingPosition)
+	servo.logger.Debug("Initializing servo on channel ", newConf.Channel, ", minPwm ", minPwm, ", maxPwm ", maxPwm, ", minAngle ", minAngle, ", maxAngle ", maxAngle, ", startingPosition ", newConf.StartingPosition)
 	servos := pca9685.NewServoGroup(pca, gpio.Duty(minPwm), gpio.Duty(maxPwm), physic.Angle(minAngle), physic.Angle(maxAngle))
 
 	servo.servo = servos.GetServo(newConf.Channel)
 
-	servo.Move(ctx, newConf.StartingPosition, nil)
+	if err := servo.Move(ctx, newConf.StartingPosition, nil); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -194,17 +197,16 @@ func (servo *pca9685Servo) DoCommand(ctx context.Context, cmd map[string]interfa
 }
 
 func (servo *pca9685Servo) IsMoving(ctx context.Context) (bool, error) {
-	return servo.moving, nil
+	return servo.opMgr.OpRunning(), nil
 }
 
 func (servo *pca9685Servo) Move(ctx context.Context, ang uint32, extra map[string]interface{}) error {
-	servo.mu.Lock()
-	defer servo.mu.Unlock()
-	servo.moving = true
+	ctx, done := servo.opMgr.New(ctx)
+	defer done()
+
 	if err := servo.servo.SetAngle(physic.Angle(ang)); err != nil {
 		return errors.Wrap(err, "couldn't set angle")
 	}
-	servo.moving = false
 	servo.position = ang
 	return nil
 }
@@ -214,11 +216,11 @@ func (servo *pca9685Servo) Position(ctx context.Context, extra map[string]interf
 }
 
 func (servo *pca9685Servo) Stop(ctx context.Context, extra map[string]interface{}) error {
-	servo.mu.Lock()
-	defer servo.mu.Unlock()
+	ctx, done := servo.opMgr.New(ctx)
+	defer done()
+
 	if err := servo.servo.SetPwm(0); err != nil {
 		return errors.Wrap(err, "couldn't stop servo")
 	}
-	servo.moving = false
 	return nil
 }
