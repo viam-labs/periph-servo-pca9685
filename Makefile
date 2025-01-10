@@ -6,4 +6,4 @@ exec: *.go */*.go go.*
 module.tar.gz: exec
 	# the bundled module
 	rm -f $@
-	tar czf $@ $^
+	tar czf $@ $^ meta.json
