@@ -6,7 +6,9 @@
   "models": [
     {
       "api": "rdk:component:servo",
-      "model": "viam-labs:servo:pca9685"
+      "model": "viam-labs:servo:pca9685",
+      "markdown_link": "README.md#viam-component-configuration",
+      "short_description": "Supports a servo connected to a PCA9685 breakout board."
     }
   ],
   "build": {
