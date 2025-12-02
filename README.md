@@ -1,86 +1,59 @@
-# periph-servo-pca9685
+# `periph-servo-pca9685` modular component
 
-*periph-servo-pca9685* is a Viam modular component that uses the [periph.io](https://periph.io/) library to control servos connected to pca9685 channels.
+This module implements the [Viam servo API](https://docs.viam.com/operate/reference/components/servo/#api) in a `periph-servo-pca9685` model.
 
-## API
+With this model, you can control servos connected to PCA9685 channels using the [periph.io](https://periph.io/) library.
 
-The periph-servo-pca9685 resource provides the following methods from Viam's built-in [rdk:component:servo API](https://docs.viam.com/components/servo/#api):
+## Setup
 
-### Move(angle uint32)
+Navigate to the **CONFIGURE** tab of your machine's page.
 
-### Position()
+Click the **+** button, select **Component or service**, then select the `servo / periph-servo-pca9685` model provided by the module.
 
-### Stop()
+Click **Add module**, enter a name for your servo, and click **Create**.
 
-## Viam Component Configuration
+## Configure your `periph-servo-pca9685` servo
 
-The following attributes may be configured as periph-servo-pca9685 config attributes.
-For example: the following configuration set up a servo on I2C bus 0, PCA9685 channel 15:
+On the new component panel, copy and paste the following attribute template into your servo's **Attributes** box:
 
-``` json
+```json
 {
-  "i2c_bus" : "0",
-  "channel" : 15
+  "i2c_bus": <string>,
+  "i2c_addr": <string>,
+  "channel": <int>,
+  "frequency_hz": <int>,
+  "min_angle_deg": <int>,
+  "max_angle_deg": <int>,
+  "starting_position_deg": <int>,
+  "min_width_us": <int>,
+  "max_width_us": <int>
 }
 ```
 
-### i2c_bus
+### Attributes
 
-*string (default: "0")*
+The following attributes are available for `periph-servo-pca9685` servos:
 
-The name or number of the I2C bus to which the PCA9685 is connected.
+| Name | Type   | Inclusion | Description |
+| ---- | ------ | --------- | ----------- |
+| `i2c_bus` | string | Optional | The name or number of the I2C bus to which the PCA9685 is connected. Default: `"0"`. |
+| `i2c_addr` | string | Optional | The I2C address of the PCA9685. Can be formatted as hex (0x) or base 10. See [this guide](https://learn.adafruit.com/scanning-i2c-addresses/raspberry-pi) for how to detect i2c devices. i2cdetect displays the hex formatted value. Default: ` "0x40"`. |
+| `channel` | int | Optional | The channel (0-15) to which the servo is connected. Default: `0`. |
+| `frequency_hz` | int | Optional | The frequency in Hz of the servo. See the servo datasheet. Default: `50`. |
+| `min_angle_deg` | int | Optional | The minimum angle in degrees to which the servo will be allowed to move. Default: `0`. |
+| `max_angle_deg` | int | Optional | The maximum angle in degrees to which the servo will be allowed to move. Default: `180`. |
+| `starting_position_deg` | int | Optional | When the servo is initiated, it will move to this position (in degrees). Default: `0`. |
+| `min_width_us` | int | Optional | The minimum duty cycle width in microseconds. See the servo datasheet. Default: `500`. |
+| `max_width_us` | int | Optional | The maximum duty cycle width in microseconds. See the servo datasheet. Default: `2500`. |
 
-### i2c_addr
+### Example Configuration
 
-*string (default: "0x40")*
-
-The number of the I2C address to which the PCA9685 is connected. This can be formatted as hex (prefixed by "0x") or base 10 (unprefixed) values.
-
-If you're not sure which address to use, see [this guide](https://learn.adafruit.com/scanning-i2c-addresses/raspberry-pi) for how to detect i2c devices. `i2cdetect` displays the hex formatted value.
-
-### channel
-
-*int (default: 0)*
-
-The channel (0-15) to which the servo to control is connected.
-
-### frequency_hz
-
-*int (default: 50)*
-
-The frequency in hz of the servo to control.
-See the datasheet for the servo to control.
-
-### min_angle_deg
-
-*int (default 0)*
-
-The minimum angle in degrees to which the servo will be allowed to move.
-
-### max_angle_deg
-
-*int (default 180)*
-
-The maximum angle to in degrees which the servo will be allowed to move.
-
-### starting_position_deg
-
-*int (default 0)*
-
-When the servo is initiated, it will move to this position (in degrees).
-
-### min_width_us
-
-*int (default 500)*
-
-The minimum duty cycle width in microseconds.
-See the datasheet for the servo to control.
-### max_width_us
-
-*int (default 2500)*
-
-The maximum duty cycle width in microseconds.
-See the datasheet for the servo to control.
+```json
+{
+  "i2c_bus": "0",
+  "channel": 15
+}
+```
 
 ## Development
 
@@ -91,15 +64,18 @@ To kick off a deployment:
 1. [Tag the release commit with the new module version](https://git-scm.com/book/en/v2/Git-Basics-Tagging) and push it to the repo
 1. [Create a release based on that tag](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release)
 
-Within a couple of minutes, the new module version should be published to the Viam registry.
+Within a couple of minutes, the new module version will be published to the Viam registry.
 
 If there is an issue with the action and a manual release is required:
 
 1. Authenticate the Viam CLI:
+
    ```console
    viam auth login
    ```
+
 1. Start a remote build for the new module version
+
    ```console
    viam module build start --version <version>
    ```
