@@ -54,8 +54,8 @@ type Config struct {
 	MaxWidth         int    `json:"max_width_us"`
 }
 
-func (cfg *Config) Validate(path string) ([]string, error) {
-	return []string{}, nil
+func (cfg *Config) Validate(path string) ([]string, []string, error) {
+	return []string{}, []string{}, nil
 }
 
 func init() {
