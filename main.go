@@ -21,7 +21,9 @@ func mainWithArgs(ctx context.Context, args []string, logger logging.Logger) err
 		return err
 	}
 
-	servoModule.AddModelFromRegistry(ctx, servo.API, pca9685.Model)
+	if err := servoModule.AddModelFromRegistry(ctx, servo.API, pca9685.Model); err != nil {
+		return err
+	}
 
 	err = servoModule.Start(ctx)
 	defer servoModule.Close(ctx)
