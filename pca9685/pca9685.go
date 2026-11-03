@@ -33,13 +33,12 @@ type pca9685Servo struct {
 	resource.TriviallyReconfigurable
 	logger logging.Logger
 
-	servo                   *pca9685.Servo
-	position                uint32
-	cancelCtx               context.Context
-	cancelFunc              func()
-	activeBackgroundWorkers sync.WaitGroup
-	mu                      sync.RWMutex
-	opMgr                   *operation.SingleOperationManager
+	servo      *pca9685.Servo
+	position   uint32
+	cancelCtx  context.Context
+	cancelFunc func()
+	mu         sync.RWMutex
+	opMgr      *operation.SingleOperationManager
 }
 
 type Config struct {
@@ -201,7 +200,7 @@ func (servo *pca9685Servo) IsMoving(ctx context.Context) (bool, error) {
 }
 
 func (servo *pca9685Servo) Move(ctx context.Context, ang uint32, extra map[string]interface{}) error {
-	ctx, done := servo.opMgr.New(ctx)
+	_, done := servo.opMgr.New(ctx)
 	defer done()
 
 	if err := servo.servo.SetAngle(physic.Angle(ang)); err != nil {
@@ -216,7 +215,7 @@ func (servo *pca9685Servo) Position(ctx context.Context, extra map[string]interf
 }
 
 func (servo *pca9685Servo) Stop(ctx context.Context, extra map[string]interface{}) error {
-	ctx, done := servo.opMgr.New(ctx)
+	_, done := servo.opMgr.New(ctx)
 	defer done()
 
 	if err := servo.servo.SetPwm(0); err != nil {
